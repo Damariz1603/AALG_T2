@@ -1,0 +1,80 @@
+
+laberinto = [
+    ['F', 1, 1, 3, 0, 1, 1, 1, 4],
+    [3, 0, 0, 1, 0, 1, 0, 0, 1],
+    [1, 1, 0, 1, 1, 1, 1, 0, 1],
+    [0, 1, 0, 1, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 1, 1, 3, 1, 1],
+    [3, 0, 1, 0, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 3, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 1, 0, 0, 4],
+    ['I', 1, 3, 1, 0, 1, 1, 1, 1],
+]
+N = 9
+PUNTOS_MINIMOS = 23
+inicio = (8, 0)
+fin = (0, 0)
+movimientos = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+def valor(f, c):
+    v = laberinto[f][c]
+    return 1 if v == 'I' or v == 'F' else v
+def es_valida(f, c, visitado):
+    return (
+        0 <= f < N
+        and 0 <= c < N
+        and valor(f, c) != 0
+        and not visitado[f][c]
+    )
+def resolver(f, c, visitado, camino, puntos):
+    visitado[f][c] = True
+    camino.append((f, c))
+    puntos += valor(f, c)
+    if (f, c) == fin:
+        if puntos >= PUNTOS_MINIMOS:
+            return True
+    else:
+        for df, dc in movimientos:
+            nf = f + df
+            nc = c + dc
+
+            if es_valida(nf, nc, visitado):
+                if resolver(nf, nc, visitado, camino, puntos):
+                    return True
+    visitado[f][c] = False
+    camino.pop()
+    return False
+def mostrar(matriz):
+    for fila in matriz:
+        print(' '.join(f'{x:>3}' for x in fila))
+print("LABERINTO ORIGINAL")
+mostrar(laberinto)
+visitado = [[False] * N for _ in range(N)]
+camino = []
+if resolver(inicio[0], inicio[1], visitado, camino, 0):
+    total = sum(valor(f, c) for f, c in camino)
+    print("\nSe logró salir del laberinto.")
+    print("Puntos acumulados:", total)
+    print("Movimientos:", len(camino) - 1)
+    solucion = []
+    for f in range(N):
+        fila = []
+        for c in range(N):
+            if valor(f, c) == 0:
+                fila.append('#')
+            else:
+                fila.append('.')
+        solucion.append(fila)
+    for orden, (f, c) in enumerate(camino):
+        if (f, c) == inicio:
+            solucion[f][c] = 'I'
+        elif (f, c) == fin:
+            solucion[f][c] = 'F'
+        else:
+            solucion[f][c] = orden
+    print("\nMATRIZ SOLUCION")
+    print("I = inicio, F = llegada, # = pared")
+    mostrar(solucion)
+    print("\nCamino recorrido:")
+    print(camino)
+else:
+    print("\nNo se logró salir con 23 o más puntos.")
